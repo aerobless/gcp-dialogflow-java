@@ -16,6 +16,12 @@ public class ChuckJokes {
     public static final String CHUCK = "Chuck";
 
     public String getJoke(String name) {
+
+        if (name == null) {
+            name = CHUCK;
+            LOGGER.warn("Name was not provided.. ");
+        }
+
         try {
 
             URL obj = new URL("https://api.chucknorris.io/jokes/random");
@@ -39,7 +45,7 @@ public class ChuckJokes {
 
             LOGGER.info(("RESPONSE " + response.toString()));
 
-            String updatedJoke = joke.replaceAll(CHUCK_NORRIS, name).replaceAll(CHUCK, name);
+            String updatedJoke = joke.replace(CHUCK_NORRIS, name).replace(CHUCK, name);
 
             LOGGER.info(("UPDATED JOKE " + updatedJoke));
             return updatedJoke;

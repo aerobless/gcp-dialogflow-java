@@ -1,43 +1,18 @@
-/*
- * Copyright 2018 Google LLC
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     https://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package com.example;
 
-import com.google.actions.api.ActionRequest;
-import com.google.actions.api.ActionResponse;
-import com.google.actions.api.DialogflowApp;
-import com.google.actions.api.ForIntent;
-
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.text.MessageFormat;
-import java.util.ResourceBundle;
-
-import org.json.JSONObject;
+import com.google.actions.api.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
+import java.text.MessageFormat;
+import java.util.ResourceBundle;
 
 public class MakeMeChuckApp extends DialogflowApp {
 
     private static final Logger LOGGER = LoggerFactory
             .getLogger(MakeMeChuckApp.class);
+    private static final String GIVEN_NAME = "given-name";
 
     @ForIntent("Welcome")
     public ActionResponse welcome(ActionRequest request) {
@@ -53,18 +28,35 @@ public class MakeMeChuckApp extends DialogflowApp {
 
     @ForIntent("ProvideName")
     public ActionResponse provideName(ActionRequest request) throws IOException {
-        String givenName = (String) request.getParameter("given-name");
+        String givenName = (String) request.getParameter(GIVEN_NAME);
 
         ResourceBundle responses = ResourceBundle.getBundle("responses");
         String greetName = responses.getString("greetName");
+
+        return getResponseBuilder(request)
+                .add(MessageFormat.format(greetName, givenName))
+                .build();
+    }
+
+    @ForIntent("TellRandomJoke")
+    public ActionResponse tellRandomJoke(ActionRequest request) throws IOException {
+        ActionContext context = request.getContext(request.getSessionId() + "/contexts/providename-followup");
+
+        String givenName = "Chuck Fallback"; //TODO: write proper fallback
+        if (context != null && context.getParameters() != null) {
+            givenName = (String) context.getParameters().get(GIVEN_NAME);
+        }
+
+        if (givenName == null) {
+            givenName = "Chuck Fallback"; //TODO: write proper fallback
+        }
 
         ChuckJokes chuckJokes = new ChuckJokes();
         String joke = chuckJokes.getJoke(givenName);
         LOGGER.info("JOKELOG" + joke);
 
         return getResponseBuilder(request)
-                .add(MessageFormat.format(greetName, givenName))
-                .add(" Here is your joke " + joke)
+                .add("Here is your joke: " + joke)
                 .build();
     }
 
