@@ -16,13 +16,11 @@ public class MakeMeChuckApp extends DialogflowApp {
 
     @ForIntent("Welcome")
     public ActionResponse welcome(ActionRequest request) {
-        // Build the "welcome" response, which contains the "askExample" response as a substitution
         ResourceBundle responses = ResourceBundle.getBundle("responses");
         String welcome = responses.getString("welcome");
-        String askExample = responses.getString("askExample");
 
         return getResponseBuilder(request)
-                .add(MessageFormat.format(welcome, askExample))
+                .add(welcome)
                 .build();
     }
 
@@ -35,6 +33,7 @@ public class MakeMeChuckApp extends DialogflowApp {
 
         return getResponseBuilder(request)
                 .add(MessageFormat.format(greetName, givenName))
+                .addSuggestions(new String[]{"Yes, tell me a joke", "No"})
                 .build();
     }
 
@@ -56,20 +55,18 @@ public class MakeMeChuckApp extends DialogflowApp {
         LOGGER.info("JOKELOG" + joke);
 
         return getResponseBuilder(request)
-                .add("Here is your joke: " + joke)
+                .add(joke)
+                .addSuggestions(new String[]{"Tell me another one", "Please go away!"})
                 .build();
     }
 
     @ForIntent("Fallback")
     public ActionResponse fallback(ActionRequest request) {
-        // Build the "didNotUnderstand" response, which contains the "askExample"
-        // response as a substitution
         ResourceBundle responses = ResourceBundle.getBundle("responses");
         String didNotUnderstand = responses.getString("didNotUnderstand");
-        String askExample = responses.getString("askExample");
 
         return getResponseBuilder(request)
-                .add(MessageFormat.format(didNotUnderstand, askExample))
+                .add(didNotUnderstand)
                 .build();
     }
 
